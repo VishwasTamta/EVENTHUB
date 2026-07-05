@@ -1,80 +1,137 @@
 # EventHub API
 
-## Overview
-
-EventHub is a Django REST Framework backend API for a simplified event ticketing platform. It allows users to create and browse events, reserve seats, cancel reservations, and filter events and reservations.
-
-## Tech Stack
-
-* Python
-* Django
-* Django REST Framework
-* SQLite
+A Django REST Framework backend API for a simplified event ticketing platform where users can browse events, reserve seats, cancel reservations, and filter events and reservations.
 
 ---
 
-## Installation
+## Table of Contents
 
-### 1. Clone the repository
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Running the Project](#running-the-project)
+- [API Endpoints](#api-endpoints)
+  - [Event Endpoints](#event-endpoints)
+  - [Reservation Endpoints](#reservation-endpoints)
+- [Features](#features)
+- [Design Decision](#design-decision)
+- [API Testing Screenshots](#api-testing-screenshots)
+
+---
+
+# Overview
+
+EventHub is a REST API built using Django and Django REST Framework. It allows users to:
+
+- Browse events
+- Reserve seats
+- Cancel reservations
+- Filter events by status and venue
+- Filter reservations by event
+- Prevent overbooking using serializer validation
+
+---
+
+# Tech Stack
+
+- Python
+- Django
+- Django REST Framework (DRF)
+- SQLite
+- uv (Package Manager)
+
+---
+
+# Project Structure
+
+```
+eventhub/
+│
+├── eventhub/
+│   ├── settings.py
+│   └── urls.py
+│
+├── events/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── middleware.py
+│   └── migrations/
+│
+├── screenshots/
+├── manage.py
+├── requirements.txt
+├── pyproject.toml
+├── uv.lock
+└── README.md
+```
+
+---
+
+# Installation
+
+## 1. Clone the repository
 
 ```bash
 git clone <your-github-repository-url>
 cd eventhub
 ```
 
-### 2. Create and activate a virtual environment
-
-Using **uv**:
+## 2. Create a virtual environment
 
 ```bash
 uv venv
 ```
 
-Activate the environment.
+Activate it.
 
-**Windows (PowerShell)**
+### Windows (PowerShell)
 
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
 
-**Windows (Command Prompt)**
+### Windows (Command Prompt)
 
 ```cmd
 .venv\Scripts\activate
 ```
 
-**macOS/Linux**
+### macOS / Linux
 
 ```bash
 source .venv/bin/activate
 ```
 
-### 3. Install dependencies
+## 3. Install dependencies
 
 ```bash
 uv sync
 ```
 
-Alternatively, if using `requirements.txt`:
+or
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Apply migrations
+## 4. Apply migrations
 
 ```bash
 uv run python manage.py migrate
 ```
 
-### 5. Run the development server
+---
+
+# Running the Project
 
 ```bash
 uv run python manage.py runserver
 ```
 
-The API will be available at:
+The API will be available at
 
 ```
 http://127.0.0.1:8000/api/
@@ -86,111 +143,65 @@ http://127.0.0.1:8000/api/
 
 ## Event Endpoints
 
-### GET /api/events/
-
-Returns all events.
-
-Supports filtering:
-
-* `?status=upcoming`
-* `?venue=Bangalore`
-
----
-
-### GET /api/events/{id}/
-
-Returns a single event.
-
----
-
-### POST /api/events/
-
-Creates a new event.
-
----
-
-### PUT/PATCH /api/events/{id}/
-
-Updates an existing event.
-
----
-
-### DELETE /api/events/{id}/
-
-Deletes an event.
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/events/` | List all events |
+| POST | `/api/events/` | Create an event |
+| GET | `/api/events/{id}/` | Retrieve a single event |
+| PUT | `/api/events/{id}/` | Update an event |
+| DELETE | `/api/events/{id}/` | Delete an event |
+| GET | `/api/events/?status=upcoming` | Filter events by status |
+| GET | `/api/events/?venue=Bangalore` | Filter events by venue |
 
 ---
 
 ## Reservation Endpoints
 
-### GET /api/reservations/
-
-Returns all reservations.
-
-Supports filtering:
-
-* `?event_id=1`
-
----
-
-### GET /api/reservations/{id}/
-
-Returns a specific reservation.
-
----
-
-### POST /api/reservations/
-
-Creates a reservation and deducts the reserved seats from the associated event.
-
----
-
-### POST /api/reservations/{id}/cancel/
-
-Cancels a reservation, restores the reserved seats to the event, and updates the reservation status to `cancelled`.
-
----
-
-### PUT/PATCH /api/reservations/{id}/
-
-Updates a reservation.
-
----
-
-### DELETE /api/reservations/{id}/
-
-Deletes a reservation.
-
----
-
-# Design Decision
-
-The reservation creation logic is implemented inside the serializer's `create()` method, where the event's available seats are updated and the reservation is created together within a `transaction.atomic()` block. This ensures both operations are treated as a single database transaction—if either operation fails, all changes are rolled back. Keeping this logic in one place centralizes the reservation process, maintains data consistency, and prevents partial updates, such as seats being deducted without a corresponding reservation being created.
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/reservations/` | List all reservations |
+| POST | `/api/reservations/` | Create a reservation |
+| GET | `/api/reservations/{id}/` | Retrieve a reservation |
+| GET | `/api/reservations/?event_id=1` | Filter reservations by event |
+| POST | `/api/reservations/{id}/cancel/` | Cancel a reservation |
+| PUT | `/api/reservations/{id}/` | Update a reservation |
+| DELETE | `/api/reservations/{id}/` | Delete a reservation |
 
 ---
 
 # Features
 
-* Create, update, retrieve and delete events
-* Create, update, retrieve and delete reservations
-* Filter events by status and venue
-* Filter reservations by event
-* Prevent overbooking
-* Prevent reservations for completed or cancelled events
-* Restore seats when a reservation is cancelled
-* Request logging middleware
+- CRUD operations for Events
+- CRUD operations for Reservations
+- Event filtering by status
+- Event filtering by venue
+- Reservation filtering by event
+- Automatic seat deduction on successful reservation
+- Automatic seat restoration on reservation cancellation
+- Overbooking prevention through serializer validation
+- Restricts reservations for completed and cancelled events
+- Request logging middleware
+- Atomic database transaction for reservation creation
+
+---
+
+# Design Decision
+
+The reservation creation logic is implemented inside the serializer's `create()` method, where the event's available seats are updated and the reservation is created together within a `transaction.atomic()` block. This ensures both operations are executed as a single database transaction. If any step fails, the transaction is rolled back, preventing partial updates and maintaining data consistency.
+
+---
 
 # API Testing Screenshots
 
-## 1. Successful Reservation (201 Created)
+## Successful Reservation (201 Created)
 
-Demonstrates a successful reservation where seats are deducted from the event.
+Demonstrates successful reservation creation and seat deduction.
 
 ![Successful Reservation](screenshots/successful_reservation.png)
 
 ---
 
-## 2. Overbooking Attempt (400 Bad Request)
+## Overbooking Attempt (400 Bad Request)
 
 Demonstrates validation that prevents reserving more seats than are available.
 
@@ -198,8 +209,8 @@ Demonstrates validation that prevents reserving more seats than are available.
 
 ---
 
-## 3. Successful Reservation Cancellation
+## Successful Reservation Cancellation
 
-Demonstrates cancelling a reservation, updating its status to `cancelled`, and restoring the reserved seats to the event.
+Demonstrates cancelling a reservation and restoring the reserved seats to the event.
 
 ![Successful Cancellation](screenshots/successful_cancellation.png)
