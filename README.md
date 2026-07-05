@@ -179,3 +179,27 @@ The reservation creation logic deducts the available seats from the associated e
 * Prevent reservations for completed or cancelled events
 * Restore seats when a reservation is cancelled
 * Request logging middleware
+
+# API Testing Screenshots
+
+## 1. Successful Reservation (201 Created)
+
+Demonstrates a successful reservation where seats are deducted from the event.
+
+![Successful Reservation](screenshots/successful_reservation.png)
+
+---
+
+## 2. Overbooking Attempt (400 Bad Request)
+
+Demonstrates validation that prevents reserving more seats than are available.
+
+![Overbooking Failure](screenshots/overbooking_failure.png)
+
+---
+
+## 3. Successful Reservation Cancellation
+
+Demonstrates cancelling a reservation, updating its status to `cancelled`, and restoring the reserved seats to the event.
+
+![Successful Cancellation](screenshots/successful_cancellation.png)
