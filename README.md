@@ -165,7 +165,7 @@ Deletes a reservation.
 
 # Design Decision
 
-The reservation creation logic deducts the available seats from the associated event inside the serializer's `create()` method before creating the reservation. Keeping both operations together centralizes the reservation logic and ensures that seat availability is updated whenever a reservation is successfully created. 
+The reservation creation logic is implemented inside the serializer's `create()` method, where the event's available seats are updated and the reservation is created together within a `transaction.atomic()` block. This ensures both operations are treated as a single database transaction—if either operation fails, all changes are rolled back. Keeping this logic in one place centralizes the reservation process, maintains data consistency, and prevents partial updates, such as seats being deducted without a corresponding reservation being created.
 
 ---
 
